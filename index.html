@@ -23,7 +23,7 @@
     .gradient-brand { background: linear-gradient(135deg, #ff4e50, #f9d423); }
     #map { height: 300px; width: 100%; border-radius: 1rem; }
     
-    /* Animations from original DopaShop */
+    /* Animations */
     @keyframes float {
       0%, 100% { transform: translate(-50%, -50%) translateY(0); }
       50% { transform: translate(-50%, -50%) translateY(-10px); }
@@ -35,6 +35,20 @@
       100% { transform: scale(1); opacity: 1; }
     }
     .animate-box { animation: boxOpen 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+    @keyframes shake {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-10deg); }
+      75% { transform: rotate(10deg); }
+    }
+    .animate-shake { animation: shake 0.2s ease-in-out infinite; }
+
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.5); }
+      100% { transform: scale(1); }
+    }
+    .animate-pop { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
   </style>
 </head>
 <body class="bg-gray-50 text-slate-900 min-h-screen">
@@ -42,7 +56,7 @@
   <!-- Header -->
   <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200">
     <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 cursor-pointer" onclick="filterProducts('all')">
         <div class="w-10 h-10 gradient-brand rounded-xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">ท</div>
         <h1 class="text-2xl font-bold tracking-tight text-slate-800">ShopThip <span class="text-rose-500">ช็อปทิพย์</span></h1>
       </div>
@@ -62,11 +76,13 @@
     <aside class="lg:col-span-3 space-y-6">
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
         <h2 class="text-lg font-semibold mb-4">หมวดหมู่สินค้า</h2>
-        <nav class="space-y-2">
-          <button class="w-full text-left px-4 py-2 rounded-xl bg-rose-50 text-rose-600 font-medium">✨ ทั้งหมด</button>
-          <button class="w-full text-left px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors">💄 เครื่องสำอาง</button>
-          <button class="w-full text-left px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors">🍪 ขนมยอดฮิต</button>
-          <button class="w-full text-left px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors">📱 เทคโนโลยี</button>
+        <nav class="space-y-2" id="category-nav">
+          <button onclick="filterProducts('all')" class="category-btn w-full text-left px-4 py-2 rounded-xl bg-rose-50 text-rose-600 font-medium" data-category="all">✨ ทั้งหมด</button>
+          <button onclick="filterProducts('beauty')" class="category-btn w-full text-left px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors" data-category="beauty">💄 เครื่องสำอาง</button>
+          <button onclick="filterProducts('food')" class="category-btn w-full text-left px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors" data-category="food">🍪 ของกินยอดฮิต</button>
+          <button onclick="filterProducts('tech')" class="category-btn w-full text-left px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors" data-category="tech">📱 เทคโนโลยี</button>
+          <button onclick="filterProducts('fashion')" class="category-btn w-full text-left px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors" data-category="fashion">👗 แฟชั่น</button>
+          <button onclick="filterProducts('cute')" class="category-btn w-full text-left px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors" data-category="cute">💖 ของปุ๊กปิ๊ก / Blind Box</button>
         </nav>
       </div>
       
@@ -191,11 +207,11 @@
 
   <!-- Success Modal -->
   <div id="success-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[80] hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-[3rem] p-12 text-center max-w-sm w-full shadow-2xl animate-box">
-      <div class="text-7xl mb-6">🎁</div>
-      <h2 class="text-3xl font-bold mb-4">ของมาถึงแล้วจ้า!</h2>
-      <p class="text-slate-500 mb-8 leading-relaxed">แตะกล่องเพื่อรับโดปามีนทิพย์และความสุขแบบเต็มพิกัด</p>
-      <button onclick="resetApp()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-lg">
+    <div id="gift-card" class="bg-white rounded-[3rem] p-12 text-center max-w-sm w-full shadow-2xl animate-box">
+      <div id="gift-box" onclick="openGift()" class="text-8xl mb-6 cursor-pointer hover:scale-110 transition-transform active:scale-95 select-none">🎁</div>
+      <h2 id="success-title" class="text-3xl font-bold mb-4">ของมาถึงแล้วจ้า!</h2>
+      <p id="success-text" class="text-slate-500 mb-8 leading-relaxed">แตะกล่องเพื่อรับโดปามีนทิพย์และความสุขแบบเต็มพิกัด</p>
+      <button id="reset-btn" onclick="resetApp()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-lg hidden">
         ช็อปใหม่อีกรอบ ✨
       </button>
     </div>
@@ -204,16 +220,27 @@
   <script>
     // Config & Data
     const products = [
-      { id: 1, name: "Lip It Water Bomb Color Balm - Berry", price: 189, emoji: "💄", color: "#fdf2f8", img: "https://images.unsplash.com/photo-1586776977607-310e9c725c37?auto=format&fit=crop&w=400&q=80" },
-      { id: 2, name: "เลย์ รสพริกเผาปรุงรส (Lay's Thai)", price: 30, emoji: "🍪", color: "#fefce8", img: "https://images.unsplash.com/photo-1566478989037-eec170784d0b?auto=format&fit=crop&w=400&q=80" },
-      { id: 3, name: "กระเป๋าสานดีไซน์โมเดิร์น", price: 450, emoji: "👜", color: "#fafaf9", img: "https://images.unsplash.com/photo-1544816153-12ad5d7133a2?auto=format&fit=crop&w=400&q=80" },
-      { id: 4, name: "เทียนหอมอโรมา กลิ่นดอกโมก", price: 290, emoji: "🕯️", color: "#f0fdfa", img: "https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=400&q=80" },
-      { id: 5, name: "เคส iPhone ลายกราฟิกไทย", price: 350, emoji: "📱", color: "#eff6ff", img: "https://images.unsplash.com/photo-1601784551446-20c9e07cdbea?auto=format&fit=crop&w=400&q=80" },
-      { id: 6, name: "หมวกแก๊ป 'ช็อปทิพย์' Edition", price: 590, emoji: "🧢", color: "#f5f3ff", img: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=400&q=80" }
+      { id: 1, name: "Lip It Water Bomb Color Balm - Berry", price: 189, emoji: "💄", category: "beauty", img: "https://images.unsplash.com/photo-1586776977607-310e9c725c37?auto=format&fit=crop&w=400&q=80" },
+      { id: 2, name: "เลย์ รสพริกเผาปรุงรส (Lay's Thai)", price: 30, emoji: "🍪", category: "food", img: "https://images.unsplash.com/photo-1566478989037-eec170784d0b?auto=format&fit=crop&w=400&q=80" },
+      { id: 3, name: "Labubu Macaron Vinyl Face (Blind Box)", price: 1590, emoji: "🧸", category: "cute", img: "https://images.unsplash.com/photo-1559124568-d0694297129f?auto=format&fit=crop&w=400&q=80" },
+      { id: 4, name: "4U2 You're Mine Powder Lipstick", price: 199, emoji: "💄", category: "beauty", img: "https://images.unsplash.com/photo-1596704017254-9b121068fb31?auto=format&fit=crop&w=400&q=80" },
+      { id: 5, name: "Gentlewoman Tote Bag (White)", price: 590, emoji: "👜", category: "fashion", img: "https://images.unsplash.com/photo-1544816153-12ad5d7133a2?auto=format&fit=crop&w=400&q=80" },
+      { id: 6, name: "NuPhy Air75 V2 Mechanical Keyboard", price: 4290, emoji: "⌨️", category: "tech", img: "https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?auto=format&fit=crop&w=400&q=80" },
+      { id: 7, name: "La Glace Baebie Blush - Pink", price: 289, emoji: "💖", category: "beauty", img: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=400&q=80" },
+      { id: 8, name: "Crybaby x Powerpuff Girls Series", price: 450, emoji: "💧", category: "cute", img: "https://images.unsplash.com/photo-1608889175123-8ee362201f81?auto=format&fit=crop&w=400&q=80" },
+      { id: 9, name: "ChaTraMue Thai Tea Mix (Original)", price: 145, emoji: "🥤", category: "food", img: "https://images.unsplash.com/photo-1544787210-2211d6e9029d?auto=format&fit=crop&w=400&q=80" },
+      { id: 10, name: "Jelly Bunny Sandals - Summer Pink", price: 990, emoji: "👡", category: "fashion", img: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=400&q=80" },
+      { id: 11, name: "Griptok 'Nong Mee' Phone Holder", price: 150, emoji: "📱", category: "tech", img: "https://images.unsplash.com/photo-1601784551446-20c9e07cdbea?auto=format&fit=crop&w=400&q=80" },
+      { id: 12, name: "Tao Kae Noi Crispy Seaweed", price: 39, emoji: "🌿", category: "food", img: "https://images.unsplash.com/photo-1599490659223-91522d721c3a?auto=format&fit=crop&w=400&q=80" },
+      { id: 13, name: "Care Bears Plush - Cheer Bear 14\"", price: 850, emoji: "🐻", category: "cute", img: "https://images.unsplash.com/photo-1559445375-3974d6184852?auto=format&fit=crop&w=400&q=80" },
+      { id: 14, name: "Glico Pocky Mango (Thai Exclusive)", price: 25, emoji: "🥭", category: "food", img: "https://images.unsplash.com/photo-1582050041567-9cfdd33e35d9?auto=format&fit=crop&w=400&q=80" },
+      { id: 15, name: "Power Bank 10000mAh (Pistachio Green)", price: 790, emoji: "🔋", category: "tech", img: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=400&q=80" },
+      { id: 16, name: "Eucerin Sun Serum - Spotless Brightening", price: 1260, emoji: "☀️", category: "beauty", img: "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=400&q=80" }
     ];
 
     let cart = [];
     let map, marker;
+    let currentCategory = 'all';
 
     // Initialize App
     window.onload = () => {
@@ -221,9 +248,11 @@
       initMap();
     };
 
-    function renderProducts() {
+    function renderProducts(category = 'all') {
       const list = document.getElementById('product-list');
-      list.innerHTML = products.map(p => `
+      const filtered = category === 'all' ? products : products.filter(p => p.category === category);
+      
+      list.innerHTML = filtered.map(p => `
         <div class="bg-white rounded-2xl overflow-hidden border border-slate-100 hover:shadow-xl transition-all group">
           <div class="h-48 overflow-hidden relative">
             <img src="${p.img}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
@@ -240,9 +269,24 @@
       `).join('');
     }
 
+    function filterProducts(category) {
+      currentCategory = category;
+      renderProducts(category);
+      
+      // Update UI
+      document.querySelectorAll('.category-btn').forEach(btn => {
+        if (btn.dataset.category === category) {
+          btn.classList.add('bg-rose-50', 'text-rose-600', 'font-medium');
+          btn.classList.remove('text-slate-500', 'hover:bg-slate-50');
+        } else {
+          btn.classList.remove('bg-rose-50', 'text-rose-600', 'font-medium');
+          btn.classList.add('text-slate-500', 'hover:bg-slate-50');
+        }
+      });
+    }
+
     // Map Functions
     function initMap() {
-      // Default: Punnawithi (Peach's Home area)
       const lat = 13.6892;
       const lng = 100.6094;
       
@@ -257,7 +301,6 @@
         if (marker) map.removeLayer(marker);
         marker = L.marker([lat, lng]).addTo(map);
         
-        // Simulating address lookup
         const addresses = [
           "เลอผาสุก คอนโดมิเนียม, ซอยปุณณวิถี 44",
           "ซอยสุขุมวิท 101, แขวงบางจาก, เขตพระโขนง",
@@ -331,7 +374,6 @@
       document.getElementById('checkout-modal').classList.add('hidden');
     }
 
-    // Tracking Logic (The Dopamine Loop)
     function startTracking() {
       closeCheckout();
       document.getElementById('tracking-layer').classList.remove('hidden');
@@ -357,6 +399,28 @@
 
     function finishOrder() {
       document.getElementById('success-modal').classList.remove('hidden');
+      // Reset gift box state
+      document.getElementById('gift-box').innerText = "🎁";
+      document.getElementById('gift-box').classList.remove('animate-pop');
+      document.getElementById('success-title').innerText = "ของมาถึงแล้วจ้า!";
+      document.getElementById('success-text').innerText = "แตะกล่องเพื่อรับโดปามีนทิพย์และความสุขแบบเต็มพิกัด";
+      document.getElementById('reset-btn').classList.add('hidden');
+    }
+
+    function openGift() {
+      const box = document.getElementById('gift-box');
+      if (box.innerText === "🎉") return; // Already opened
+
+      box.classList.add('animate-shake');
+      
+      setTimeout(() => {
+        box.classList.remove('animate-shake');
+        box.innerText = "🎉";
+        box.classList.add('animate-pop');
+        document.getElementById('success-title').innerText = "ได้รับโดปามีนแล้ว! ✨";
+        document.getElementById('success-text').innerText = "ความสุขแบบทิพย์ถูกเติมเต็มในจิตใจของคุณเรียบร้อย";
+        document.getElementById('reset-btn').classList.remove('hidden');
+      }, 800);
     }
 
     function resetApp() {
