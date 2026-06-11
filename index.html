@@ -3,439 +3,1168 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ShopThip - ช็อปทิพย์ | Shopping with Dopamine</title>
-  
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Google Fonts: Kanit -->
+  <title>ShopThip - ช้อปทิพย์</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  
-  <!-- Leaflet.js -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
   <style>
-    body { font-family: 'Kanit', sans-serif; }
-    .custom-shadow { box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1); }
-    .gradient-brand { background: linear-gradient(135deg, #ff4e50, #f9d423); }
-    #map { height: 300px; width: 100%; border-radius: 1rem; }
-    
-    /* Animations */
-    @keyframes float {
-      0%, 100% { transform: translate(-50%, -50%) translateY(0); }
-      50% { transform: translate(-50%, -50%) translateY(-10px); }
+    :root {
+      --ink: #172033;
+      --muted: #687083;
+      --line: #e7e9ee;
+      --soft: #f6f7f9;
+      --paper: #ffffff;
+      --brand: #0f8bd6;
+      --brand-dark: #096aa8;
+      --accent: #ef476f;
+      --green: #14a76c;
+      --shadow: 0 18px 45px rgba(23, 32, 51, 0.12);
     }
-    .animate-float { animation: float 1.4s ease-in-out infinite; }
-    
-    @keyframes boxOpen {
-      0% { transform: scale(0.8); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    .animate-box { animation: boxOpen 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 
-    @keyframes shake {
-      0%, 100% { transform: rotate(0deg); }
-      25% { transform: rotate(-10deg); }
-      75% { transform: rotate(10deg); }
-    }
-    .animate-shake { animation: shake 0.2s ease-in-out infinite; }
+    * { box-sizing: border-box; }
 
-    @keyframes pop {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.5); }
-      100% { transform: scale(1); }
+    body {
+      margin: 0;
+      font-family: "Kanit", system-ui, sans-serif;
+      color: var(--ink);
+      background: #f4f6f8;
     }
-    .animate-pop { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+    button, input, select, textarea { font: inherit; }
+    button { border: 0; cursor: pointer; }
+    img { display: block; max-width: 100%; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: rgba(255, 255, 255, 0.94);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(16px);
+    }
+
+    .topbar-inner {
+      width: min(100%, 1240px);
+      height: 72px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: auto minmax(220px, 1fr) auto;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--ink);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 23px;
+      white-space: nowrap;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      color: white;
+      background: #111827;
+      font-size: 20px;
+    }
+
+    .searchbar {
+      height: 44px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--soft);
+    }
+
+    .searchbar input {
+      width: 100%;
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--ink);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-btn, .chip, .primary-btn, .ghost-btn {
+      min-height: 40px;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform 160ms ease, background 160ms ease, color 160ms ease;
+    }
+
+    .icon-btn:hover, .chip:hover, .primary-btn:hover, .ghost-btn:hover { transform: translateY(-1px); }
+
+    .icon-btn {
+      position: relative;
+      width: 44px;
+      display: grid;
+      place-items: center;
+      background: var(--soft);
+      color: var(--ink);
+      font-size: 20px;
+    }
+
+    .badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      min-width: 20px;
+      height: 20px;
+      display: grid;
+      place-items: center;
+      padding: 0 6px;
+      border: 2px solid white;
+      border-radius: 999px;
+      background: var(--accent);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .mobile-filter-btn { display: none; }
+
+    .hero {
+      width: min(100%, 1240px);
+      margin: 22px auto 0;
+      padding: 0 20px;
+    }
+
+    .hero-panel {
+      min-height: 330px;
+      border-radius: 26px;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.1fr);
+      background: #101827;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-copy {
+      padding: clamp(28px, 5vw, 56px);
+      color: white;
+      display: grid;
+      align-content: center;
+      gap: 18px;
+    }
+
+    .eyebrow {
+      width: max-content;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      color: rgba(255, 255, 255, 0.82);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: 1.03;
+      letter-spacing: 0;
+    }
+
+    .hero p {
+      max-width: 540px;
+      margin: 0;
+      color: rgba(255, 255, 255, 0.72);
+      line-height: 1.7;
+    }
+
+    .hero-media {
+      min-height: 330px;
+      background:
+        linear-gradient(90deg, rgba(16, 24, 39, 0.15), rgba(16, 24, 39, 0)),
+        url("https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=1400&q=85") center/cover;
+    }
+
+    .layout {
+      width: min(100%, 1240px);
+      margin: 22px auto 56px;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: 270px minmax(0, 1fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .filters {
+      position: sticky;
+      top: 92px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: white;
+      box-shadow: 0 10px 30px rgba(23, 32, 51, 0.05);
+    }
+
+    .filter-group { padding: 18px; }
+    .filter-group + .filter-group { border-top: 1px solid var(--line); }
+
+    .filter-title {
+      margin: 0 0 12px;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .cat-list, .price-list { display: grid; gap: 8px; }
+
+    .cat-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--muted);
+      text-align: left;
+      font-weight: 500;
+    }
+
+    .cat-btn.active {
+      color: var(--brand-dark);
+      background: #eaf6ff;
+    }
+
+    .price-option {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--muted);
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .price-option input { accent-color: var(--brand); }
+
+    .filter-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .filter-row input {
+      width: 100%;
+      padding: 10px 11px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      outline: 0;
+      background: var(--soft);
+    }
+
+    .ghost-btn {
+      padding: 10px 16px;
+      background: var(--soft);
+      color: var(--ink);
+    }
+
+    .primary-btn {
+      padding: 12px 18px;
+      color: white;
+      background: var(--brand);
+    }
+
+    .primary-btn:hover { background: var(--brand-dark); }
+
+    .catalog-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .catalog-head h2 {
+      margin: 0 0 4px;
+      font-size: 26px;
+    }
+
+    .catalog-head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .sort-select {
+      min-width: 170px;
+      height: 42px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: white;
+      outline: 0;
+      color: var(--ink);
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .product-card {
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: white;
+      transition: transform 180ms ease, box-shadow 180ms ease;
+    }
+
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow);
+    }
+
+    .product-image {
+      position: relative;
+      aspect-ratio: 1 / 0.82;
+      background: var(--soft);
+      overflow: hidden;
+    }
+
+    .product-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 400ms ease;
+    }
+
+    .product-card:hover .product-image img { transform: scale(1.06); }
+
+    .label {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .product-body {
+      padding: 15px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .product-brand {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .product-title {
+      min-height: 47px;
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .rating {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .price-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .price {
+      font-size: 21px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .detail-link {
+      color: var(--brand-dark);
+      background: transparent;
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .add-btn {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: var(--ink);
+      color: white;
+      font-size: 22px;
+    }
+
+    .empty {
+      min-height: 260px;
+      display: grid;
+      place-items: center;
+      grid-column: 1 / -1;
+      color: var(--muted);
+      text-align: center;
+      border: 1px dashed #ccd2dc;
+      border-radius: 20px;
+      background: white;
+    }
+
+    .drawer-backdrop, .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      background: rgba(11, 18, 32, 0.48);
+    }
+
+    .drawer-backdrop.show, .modal-backdrop.show { display: block; }
+
+    .cart-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      z-index: 60;
+      width: min(100%, 420px);
+      height: 100dvh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      background: white;
+      box-shadow: -18px 0 45px rgba(23, 32, 51, 0.16);
+      transform: translateX(105%);
+      transition: transform 240ms ease;
+    }
+
+    .cart-drawer.show { transform: translateX(0); }
+
+    .drawer-head, .drawer-foot {
+      padding: 18px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .drawer-foot {
+      border-top: 1px solid var(--line);
+      border-bottom: 0;
+      display: grid;
+      background: var(--soft);
+    }
+
+    .drawer-head h2 { margin: 0; }
+
+    .cart-items {
+      padding: 16px;
+      overflow: auto;
+      display: grid;
+      align-content: start;
+      gap: 12px;
+    }
+
+    .cart-item {
+      display: grid;
+      grid-template-columns: 72px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+    }
+
+    .cart-item img {
+      width: 72px;
+      height: 72px;
+      border-radius: 12px;
+      object-fit: cover;
+      background: var(--soft);
+    }
+
+    .cart-item h4 {
+      margin: 0 0 4px;
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .cart-item p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .qty {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 8px;
+    }
+
+    .qty button {
+      width: 27px;
+      height: 27px;
+      border-radius: 9px;
+      background: var(--soft);
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .cart-total-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .modal-backdrop {
+      z-index: 70;
+      padding: 18px;
+      overflow: auto;
+    }
+
+    .modal-backdrop.show {
+      display: grid;
+      place-items: center;
+    }
+
+    .product-modal, .checkout-modal {
+      width: min(100%, 960px);
+      max-height: min(92dvh, 900px);
+      overflow: hidden;
+      border-radius: 24px;
+      background: white;
+      box-shadow: var(--shadow);
+    }
+
+    .product-modal {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .modal-media {
+      min-height: 560px;
+      background: var(--soft);
+    }
+
+    .modal-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .modal-info {
+      padding: 28px;
+      overflow: auto;
+      display: grid;
+      align-content: start;
+      gap: 18px;
+    }
+
+    .modal-info h2 {
+      margin: 0;
+      font-size: clamp(26px, 4vw, 38px);
+      line-height: 1.12;
+    }
+
+    .modal-close {
+      justify-self: end;
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--ink);
+      font-size: 20px;
+    }
+
+    .detail-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .detail-meta span {
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .option-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      padding: 9px 13px;
+      background: var(--soft);
+      color: var(--ink);
+    }
+
+    .swatch {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      border: 3px solid white;
+      box-shadow: 0 0 0 1px #cfd5df;
+      background: var(--color);
+    }
+
+    .checkout-modal {
+      padding: 28px;
+      display: grid;
+      gap: 18px;
+      text-align: center;
+    }
+
+    .checkout-modal h2 { margin: 0; font-size: 28px; }
+    .checkout-modal p { margin: 0; color: var(--muted); line-height: 1.65; }
+
+    @media (max-width: 1040px) {
+      .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .hero-panel { grid-template-columns: 1fr; }
+      .hero-media { min-height: 260px; order: -1; }
+    }
+
+    @media (max-width: 820px) {
+      .topbar-inner {
+        height: auto;
+        min-height: 68px;
+        grid-template-columns: 1fr auto;
+        padding: 12px 16px;
+      }
+
+      .searchbar {
+        grid-column: 1 / -1;
+        order: 3;
+      }
+
+      .brand { font-size: 20px; }
+      .mobile-filter-btn { display: grid; }
+
+      .hero {
+        margin-top: 14px;
+        padding: 0 14px;
+      }
+
+      .hero-panel { border-radius: 20px; }
+      .hero-copy { padding: 24px; }
+
+      .layout {
+        display: block;
+        padding: 0 14px;
+        margin-top: 16px;
+      }
+
+      .filters {
+        position: fixed;
+        inset: 0 0 0 auto;
+        z-index: 80;
+        width: min(88%, 340px);
+        padding: 14px;
+        overflow: auto;
+        background: white;
+        transform: translateX(105%);
+        transition: transform 220ms ease;
+      }
+
+      .filters.show { transform: translateX(0); }
+      .filter-mobile-head { display: flex !important; }
+
+      .catalog-head {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .sort-select { width: 100%; }
+      .product-grid { grid-template-columns: 1fr; }
+
+      .product-card {
+        display: grid;
+        grid-template-columns: 126px 1fr;
+      }
+
+      .product-image { aspect-ratio: auto; min-height: 168px; }
+
+      .product-modal {
+        grid-template-columns: 1fr;
+        overflow: auto;
+      }
+
+      .modal-media { min-height: 300px; }
+      .modal-info { padding: 20px; }
+    }
   </style>
 </head>
-<body class="bg-gray-50 text-slate-900 min-h-screen">
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="#" class="brand" onclick="setCategory('all')">
+        <span class="brand-mark">ท</span>
+        <span>ShopThip</span>
+      </a>
 
-  <!-- Header -->
-  <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200">
-    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-2 cursor-pointer" onclick="filterProducts('all')">
-        <div class="w-10 h-10 gradient-brand rounded-xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">ท</div>
-        <h1 class="text-2xl font-bold tracking-tight text-slate-800">ShopThip <span class="text-rose-500">ช็อปทิพย์</span></h1>
-      </div>
-      
-      <div class="flex items-center gap-4">
-        <button onclick="toggleCart()" class="relative p-2 hover:bg-slate-100 rounded-full transition-colors">
-          <span class="text-2xl">🛒</span>
-          <span id="cart-badge" class="absolute top-0 right-0 w-5 h-5 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">0</span>
+      <label class="searchbar">
+        <span>⌕</span>
+        <input id="searchInput" type="search" placeholder="ค้นหาสินค้า เช่น รองเท้า หูฟัง ลิป">
+      </label>
+
+      <div class="header-actions">
+        <button class="icon-btn mobile-filter-btn" onclick="toggleFilters()" aria-label="เปิดตัวกรอง">☰</button>
+        <button class="icon-btn" onclick="toggleCart()" aria-label="เปิดตะกร้า">
+          🛒
+          <span id="cartBadge" class="badge">0</span>
         </button>
       </div>
     </div>
   </header>
 
-  <main class="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
-    
-    <!-- Sidebar / Categories -->
-    <aside class="lg:col-span-3 space-y-6">
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-        <h2 class="text-lg font-semibold mb-4">หมวดหมู่สินค้า</h2>
-        <nav class="space-y-2" id="category-nav">
-          <button onclick="filterProducts('all')" class="category-btn w-full text-left px-4 py-2 rounded-xl bg-rose-50 text-rose-600 font-medium" data-category="all">✨ ทั้งหมด</button>
-          <button onclick="filterProducts('beauty')" class="category-btn w-full text-left px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors" data-category="beauty">💄 เครื่องสำอาง</button>
-          <button onclick="filterProducts('food')" class="category-btn w-full text-left px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors" data-category="food">🍪 ของกินยอดฮิต</button>
-          <button onclick="filterProducts('tech')" class="category-btn w-full text-left px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors" data-category="tech">📱 เทคโนโลยี</button>
-          <button onclick="filterProducts('fashion')" class="category-btn w-full text-left px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors" data-category="fashion">👗 แฟชั่น</button>
-          <button onclick="filterProducts('cute')" class="category-btn w-full text-left px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors" data-category="cute">💖 ของปุ๊กปิ๊ก / Blind Box</button>
-        </nav>
+  <section class="hero">
+    <div class="hero-panel">
+      <div class="hero-copy">
+        <span class="eyebrow">ช้อปทิพย์ ไม่หักเงินจริง</span>
+        <h1>เลือกของเหมือนช้อปจริง แต่จ่ายด้วยความสุข</h1>
+        <p>รวมสินค้ายอดฮิตแบบจับต้องได้ รูปสินค้าจริง ดูรายละเอียดได้ ใส่ตะกร้าได้ และจบออเดอร์แบบเบาๆ สำหรับวันที่อยากกดซื้อแต่ไม่อยากเสียเงิน</p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="primary-btn" onclick="scrollToCatalog()">เริ่มช้อป</button>
+          <button class="ghost-btn" onclick="setCategory('tech')">ดูแก็ดเจ็ต</button>
+        </div>
       </div>
-      
-      <div class="bg-slate-900 p-6 rounded-2xl text-white shadow-xl">
-        <h3 class="font-bold text-lg mb-2">ShopThip Premium 💎</h3>
-        <p class="text-slate-400 text-sm leading-relaxed">ช็อปความสุขแบบพรีเมียม ส่งไวในจินตนาการ 7.5 วินาที พร้อมรับโดปามีนทันที!</p>
+      <div class="hero-media" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <main id="catalog" class="layout">
+    <aside id="filters" class="filters">
+      <div class="filter-mobile-head" style="display:none; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px;">
+        <strong>ตัวกรองสินค้า</strong>
+        <button class="icon-btn" onclick="toggleFilters()">×</button>
+      </div>
+
+      <div class="panel">
+        <div class="filter-group">
+          <h3 class="filter-title">หมวดหมู่</h3>
+          <nav id="categoryList" class="cat-list"></nav>
+        </div>
+
+        <div class="filter-group">
+          <h3 class="filter-title">ช่วงราคา</h3>
+          <div id="priceRanges" class="price-list"></div>
+        </div>
+
+        <div class="filter-group">
+          <h3 class="filter-title">กำหนดราคาเอง</h3>
+          <div class="filter-row">
+            <input id="minPrice" type="number" min="0" placeholder="ต่ำสุด">
+            <input id="maxPrice" type="number" min="0" placeholder="สูงสุด">
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <button class="ghost-btn" style="width:100%;" onclick="resetFilters()">ล้างตัวกรอง</button>
+        </div>
       </div>
     </aside>
 
-    <!-- Product Grid -->
-    <section class="lg:col-span-9">
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="product-list">
-        <!-- Products will be injected here -->
+    <section>
+      <div class="catalog-head">
+        <div>
+          <h2 id="catalogTitle">สินค้าทั้งหมด</h2>
+          <p id="catalogSubtitle">กำลังโหลดสินค้า</p>
+        </div>
+        <select id="sortSelect" class="sort-select" aria-label="เรียงสินค้า">
+          <option value="popular">ยอดนิยม</option>
+          <option value="price-low">ราคาต่ำไปสูง</option>
+          <option value="price-high">ราคาสูงไปต่ำ</option>
+          <option value="rating">คะแนนสูงสุด</option>
+        </select>
       </div>
-    </section>
 
+      <div id="productGrid" class="product-grid"></div>
+    </section>
   </main>
 
-  <!-- Cart Sidebar Drawer -->
-  <div id="cart-drawer" class="fixed inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
-    <div class="p-6 border-b border-slate-100 flex items-center justify-between">
-      <h2 class="text-xl font-bold">ตะกร้าของคุณ</h2>
-      <button onclick="toggleCart()" class="text-2xl hover:rotate-90 transition-transform">✕</button>
+  <div id="drawerBackdrop" class="drawer-backdrop" onclick="toggleCart(false)"></div>
+  <aside id="cartDrawer" class="cart-drawer" aria-label="ตะกร้าสินค้า">
+    <div class="drawer-head">
+      <h2>ตะกร้าช้อปทิพย์</h2>
+      <button class="icon-btn" onclick="toggleCart(false)" aria-label="ปิดตะกร้า">×</button>
     </div>
-    
-    <div id="cart-items" class="flex-1 overflow-y-auto p-6 space-y-4">
-      <!-- Cart items injected here -->
-      <div class="text-center py-20 text-slate-400" id="empty-cart-msg">ตะกร้ายังว่างอยู่นะ... มาช็อปกันเถอะ!</div>
-    </div>
-    
-    <div class="p-6 border-t border-slate-100 bg-slate-50">
-      <div class="flex justify-between items-center mb-6">
-        <span class="text-slate-500">ยอดรวมทั้งหมด</span>
-        <span class="text-2xl font-bold text-slate-900">฿<span id="cart-total">0</span></span>
+    <div id="cartItems" class="cart-items"></div>
+    <div class="drawer-foot">
+      <div class="cart-total-row">
+        <span>ยอดรวม</span>
+        <span id="cartTotal">฿0</span>
       </div>
-      <button onclick="openCheckout()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-lg hover:bg-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed" id="checkout-btn" disabled>
-        ดำเนินการชำระเงินทิพย์
-      </button>
+      <button id="checkoutButton" class="primary-btn" onclick="checkout()" disabled>สั่งซื้อทิพย์</button>
     </div>
+  </aside>
+
+  <div id="productModalBackdrop" class="modal-backdrop" onclick="closeProductDetail(event)">
+    <article id="productModal" class="product-modal"></article>
   </div>
 
-  <!-- Checkout Modal -->
-  <div id="checkout-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
-      <!-- Left: Form & Map -->
-      <div class="flex-1 p-8 overflow-y-auto border-r border-slate-100">
-        <h2 class="text-2xl font-bold mb-6">ที่อยู่จัดส่ง</h2>
-        
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-1">ชื่อผู้รับ</label>
-            <input type="text" id="receiver-name" placeholder="ระบุชื่อของคุณ" class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-rose-500 outline-none">
-          </div>
-          
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-1">ที่อยู่จัดส่ง (จากแมพ)</label>
-            <textarea id="address-input" rows="2" placeholder="เลือกที่อยู่ในแผนที่..." class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-rose-500 outline-none" readonly></textarea>
-          </div>
-          
-          <div id="map" class="shadow-inner"></div>
-          <p class="text-[10px] text-slate-400 mt-1">* คลิกบนแผนที่เพื่อเลือกจุดส่งของ</p>
-        </div>
-      </div>
-      
-      <!-- Right: Summary & Action -->
-      <div class="w-full md:w-80 bg-slate-50 p-8 flex flex-col">
-        <h3 class="text-lg font-bold mb-4">สรุปคำสั่งซื้อ</h3>
-        <div class="flex-1 space-y-3 text-sm text-slate-600 mb-6">
-          <div class="flex justify-between"><span>รวมสินค้า</span><span class="font-semibold text-slate-900">฿<span id="summary-subtotal">0</span></span></div>
-          <div class="flex justify-between"><span>ค่าส่งทิพย์</span><span class="text-green-600 font-semibold">FREE</span></div>
-          <div class="border-t border-slate-200 pt-3 flex justify-between text-base">
-            <span class="font-bold text-slate-900">ยอดรวม</span>
-            <span class="font-bold text-rose-500">฿<span id="summary-total">0</span></span>
-          </div>
-        </div>
-        
-        <button onclick="startTracking()" class="w-full gradient-brand text-white py-4 rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all">
-          ชำระเงินและรับโดปามีน
-        </button>
-        <button onclick="closeCheckout()" class="mt-4 text-slate-400 text-sm hover:text-slate-600">ยกเลิก</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tracking Layer -->
-  <div id="tracking-layer" class="fixed inset-0 bg-white z-[70] hidden flex flex-col p-6 overflow-hidden">
-    <div class="max-w-4xl mx-auto w-full flex-1 flex flex-col">
-      <div class="text-center mb-10">
-        <div class="inline-block p-3 bg-rose-50 rounded-full text-rose-500 text-3xl mb-4 animate-bounce">🛵</div>
-        <h2 class="text-3xl font-bold mb-2">ออเดอร์ทิพย์กำลังเดินทาง!</h2>
-        <p class="text-slate-500">ความสุขพรีเมียมจะถึงมือคุณใน 7.5 วินาที</p>
-      </div>
-
-      <!-- Tracking Map Visualization -->
-      <div class="flex-1 relative bg-slate-100 rounded-[3rem] border-4 border-white shadow-2xl overflow-hidden mb-8">
-         <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(#000 1px, transparent 1px); background-size: 20px 20px;"></div>
-         
-         <div class="absolute left-10 top-1/2 -translate-y-1/2 bg-white p-4 rounded-2xl shadow-lg text-2xl">🏬</div>
-         <div class="absolute right-10 top-1/3 bg-white p-4 rounded-2xl shadow-lg text-2xl">🏢</div>
-         
-         <!-- Progress Line -->
-         <div class="absolute left-20 right-20 top-1/2 h-2 bg-white rounded-full">
-            <div id="tracking-line" class="h-full gradient-brand rounded-full transition-all duration-100 ease-linear" style="width: 0%"></div>
-         </div>
-
-         <!-- Rider -->
-         <div id="rider" class="absolute text-4xl animate-float transition-all duration-100 ease-linear" style="left: 20%; top: 50%; transform: translate(-50%, -50%)">🛵</div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-4 mb-8">
-        <div class="bg-slate-50 p-6 rounded-3xl text-center">
-          <span class="text-slate-400 text-xs block mb-1">ระยะเวลารอทั้งหมด</span>
-          <strong class="text-2xl font-bold">7.5 วิ</strong>
-        </div>
-        <div class="bg-slate-50 p-6 rounded-3xl text-center">
-          <span class="text-slate-400 text-xs block mb-1">เวลาที่เหลือ</span>
-          <strong id="timer" class="text-2xl font-bold text-rose-500">7.5 วิ</strong>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Success Modal -->
-  <div id="success-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[80] hidden flex items-center justify-center p-4">
-    <div id="gift-card" class="bg-white rounded-[3rem] p-12 text-center max-w-sm w-full shadow-2xl animate-box">
-      <div id="gift-box" onclick="openGift()" class="text-8xl mb-6 cursor-pointer hover:scale-110 transition-transform active:scale-95 select-none">🎁</div>
-      <h2 id="success-title" class="text-3xl font-bold mb-4">ของมาถึงแล้วจ้า!</h2>
-      <p id="success-text" class="text-slate-500 mb-8 leading-relaxed">แตะกล่องเพื่อรับโดปามีนทิพย์และความสุขแบบเต็มพิกัด</p>
-      <button id="reset-btn" onclick="resetApp()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-lg hidden">
-        ช็อปใหม่อีกรอบ ✨
-      </button>
-    </div>
+  <div id="checkoutModalBackdrop" class="modal-backdrop" onclick="closeCheckout(event)">
+    <section class="checkout-modal">
+      <div style="font-size:64px;">🛍️</div>
+      <h2>สั่งซื้อทิพย์สำเร็จ</h2>
+      <p id="checkoutText">คุณได้รับโดปามีนเรียบร้อยแล้ว ไม่มีการหักเงินจริง และไม่มีพัสดุจริงออกเดินทาง</p>
+      <button class="primary-btn" onclick="resetCart()">กลับไปช้อปต่อ</button>
+    </section>
   </div>
 
   <script>
-    // Config & Data
     const products = [
-      { id: 1, name: "Lip It Water Bomb Color Balm - Berry", price: 189, emoji: "💄", category: "beauty", img: "https://images.unsplash.com/photo-1586776977607-310e9c725c37?auto=format&fit=crop&w=400&q=80" },
-      { id: 2, name: "เลย์ รสพริกเผาปรุงรส (Lay's Thai)", price: 30, emoji: "🍪", category: "food", img: "https://images.unsplash.com/photo-1566478989037-eec170784d0b?auto=format&fit=crop&w=400&q=80" },
-      { id: 3, name: "Labubu Macaron Vinyl Face (Blind Box)", price: 1590, emoji: "🧸", category: "cute", img: "https://images.unsplash.com/photo-1559124568-d0694297129f?auto=format&fit=crop&w=400&q=80" },
-      { id: 4, name: "4U2 You're Mine Powder Lipstick", price: 199, emoji: "💄", category: "beauty", img: "https://images.unsplash.com/photo-1596704017254-9b121068fb31?auto=format&fit=crop&w=400&q=80" },
-      { id: 5, name: "Gentlewoman Tote Bag (White)", price: 590, emoji: "👜", category: "fashion", img: "https://images.unsplash.com/photo-1544816153-12ad5d7133a2?auto=format&fit=crop&w=400&q=80" },
-      { id: 6, name: "NuPhy Air75 V2 Mechanical Keyboard", price: 4290, emoji: "⌨️", category: "tech", img: "https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?auto=format&fit=crop&w=400&q=80" },
-      { id: 7, name: "La Glace Baebie Blush - Pink", price: 289, emoji: "💖", category: "beauty", img: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=400&q=80" },
-      { id: 8, name: "Crybaby x Powerpuff Girls Series", price: 450, emoji: "💧", category: "cute", img: "https://images.unsplash.com/photo-1608889175123-8ee362201f81?auto=format&fit=crop&w=400&q=80" },
-      { id: 9, name: "ChaTraMue Thai Tea Mix (Original)", price: 145, emoji: "🥤", category: "food", img: "https://images.unsplash.com/photo-1544787210-2211d6e9029d?auto=format&fit=crop&w=400&q=80" },
-      { id: 10, name: "Jelly Bunny Sandals - Summer Pink", price: 990, emoji: "👡", category: "fashion", img: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=400&q=80" },
-      { id: 11, name: "Griptok 'Nong Mee' Phone Holder", price: 150, emoji: "📱", category: "tech", img: "https://images.unsplash.com/photo-1601784551446-20c9e07cdbea?auto=format&fit=crop&w=400&q=80" },
-      { id: 12, name: "Tao Kae Noi Crispy Seaweed", price: 39, emoji: "🌿", category: "food", img: "https://images.unsplash.com/photo-1599490659223-91522d721c3a?auto=format&fit=crop&w=400&q=80" },
-      { id: 13, name: "Care Bears Plush - Cheer Bear 14\"", price: 850, emoji: "🐻", category: "cute", img: "https://images.unsplash.com/photo-1559445375-3974d6184852?auto=format&fit=crop&w=400&q=80" },
-      { id: 14, name: "Glico Pocky Mango (Thai Exclusive)", price: 25, emoji: "🥭", category: "food", img: "https://images.unsplash.com/photo-1582050041567-9cfdd33e35d9?auto=format&fit=crop&w=400&q=80" },
-      { id: 15, name: "Power Bank 10000mAh (Pistachio Green)", price: 790, emoji: "🔋", category: "tech", img: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=400&q=80" },
-      { id: 16, name: "Eucerin Sun Serum - Spotless Brightening", price: 1260, emoji: "☀️", category: "beauty", img: "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=400&q=80" }
+      { id: 1, category: "shoes", brand: "Nike", name: "Red Running Sneakers", price: 5290, rating: 4.9, sold: 1840, tag: "Best seller", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=900&q=85", desc: "รองเท้าวิ่งสีแดงทรงสปอร์ต ใส่เดินทั้งวันได้และเป็นจุดเด่นของลุค", options: ["US 6", "US 7", "US 8", "US 9"], colors: ["#dc2626", "#111827", "#f8fafc"] },
+      { id: 2, category: "fashion", brand: "Classic Wear", name: "Black Wayfarer Sunglasses", price: 3990, rating: 4.8, sold: 920, tag: "Classic", image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=900&q=85", desc: "แว่นกันแดดทรงคลาสสิก ใส่ได้ทุกวัน เหมาะกับลุคเมืองและเที่ยวทะเล", options: ["Black", "Tortoise"], colors: ["#111111", "#6b4226"] },
+      { id: 3, category: "tech", brand: "Audio Pro", name: "Wireless Over-Ear Headphones", price: 9990, rating: 4.9, sold: 1420, tag: "Noise canceling", image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=900&q=85", desc: "หูฟังไร้สายแบบครอบหู เหมาะกับทำงาน คาเฟ่ และเดินทาง", options: ["Black", "Silver"], colors: ["#1f2937", "#d1d5db"] },
+      { id: 4, category: "tech", brand: "Smart Gear", name: "Sport Smartwatch", price: 14900, rating: 4.8, sold: 760, tag: "Smart watch", image: "https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?auto=format&fit=crop&w=900&q=85", desc: "สมาร์ตวอทช์สำหรับสุขภาพ แจ้งเตือน และติดตามกิจกรรมในชีวิตประจำวัน", options: ["41 mm", "45 mm"], colors: ["#111827", "#f3f4f6", "#f472b6"] },
+      { id: 5, category: "beauty", brand: "Lip Studio", name: "Pink Moisture Lipstick", price: 1550, rating: 4.7, sold: 2100, tag: "Beauty pick", image: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=900&q=85", desc: "ลิปสติกโทนชมพู เติมสีและความชุ่มชื้น ใช้ง่ายทุกวัน", options: ["Pink", "Rosewood", "Berry"], colors: ["#f7a7b9", "#b75d69", "#8f244d"] },
+      { id: 6, category: "beauty", brand: "The Ordinary", name: "Niacinamide 10% + Zinc 1%", price: 590, rating: 4.6, sold: 3220, tag: "Skincare", image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=900&q=85", desc: "เซรั่มบำรุงผิวสำหรับ routine เบาๆ เหมาะกับคนอยากดูแลผิวทุกวัน", options: ["30 ml", "60 ml"], colors: ["#f8fafc"] },
+      { id: 7, category: "bags", brand: "Daily Bag", name: "Leather Tote Bag", price: 4200, rating: 4.7, sold: 1180, tag: "Everyday bag", image: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=900&q=85", desc: "กระเป๋าทรง tote ใช้งานทุกวัน ใส่ของได้เยอะ น้ำหนักเบา", options: ["Medium", "Large"], colors: ["#0f172a", "#8b5e3c", "#f8fafc"] },
+      { id: 8, category: "tech", brand: "Desk Gear", name: "Compact Wireless Keyboard", price: 3590, rating: 4.8, sold: 1050, tag: "Desk setup", image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=900&q=85", desc: "คีย์บอร์ดไร้สายสำหรับโต๊ะทำงาน พิมพ์สบายและประหยัดพื้นที่", options: ["Thai/Eng", "Eng"], colors: ["#111827", "#e5e7eb"] },
+      { id: 9, category: "food", brand: "Cafe Pack", name: "Iced Tea Citrus Set", price: 145, rating: 4.8, sold: 4200, tag: "Cafe drink", image: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=900&q=85", desc: "เซ็ตชาเย็นกลิ่นซิตรัสสำหรับชงเองที่บ้านแบบคาเฟ่", options: ["400 g", "800 g"], colors: ["#b45309", "#84cc16"] },
+      { id: 10, category: "food", brand: "Snack Pack", name: "Premium Potato Chips Set", price: 189, rating: 4.5, sold: 3100, tag: "Snack", image: "https://images.unsplash.com/photo-1566478989037-eec170784d0b?auto=format&fit=crop&w=900&q=85", desc: "เซ็ตมันฝรั่งทอดกรอบสำหรับดูซีรีส์หรือแบ่งเพื่อน", options: ["3 bags", "6 bags"], colors: ["#facc15", "#ef4444"] },
+      { id: 11, category: "home", brand: "Home Scent", name: "Clean Cotton Scented Candle", price: 890, rating: 4.7, sold: 640, tag: "Home scent", image: "https://images.unsplash.com/photo-1602874801006-e26c1d8a51ff?auto=format&fit=crop&w=900&q=85", desc: "เทียนหอมกลิ่นสะอาด เหมาะกับห้องนอนและโต๊ะทำงาน", options: ["Small", "Medium", "Large"], colors: ["#f8fafc", "#dbeafe"] },
+      { id: 12, category: "home", brand: "Home Studio", name: "Minimal Desk Lamp", price: 2490, rating: 4.6, sold: 540, tag: "Interior", image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=900&q=85", desc: "โคมไฟตั้งโต๊ะเรียบๆ สำหรับมุมอ่านหนังสือและทำงาน", options: ["Warm white", "Daylight"], colors: ["#111827", "#f8fafc", "#dc2626"] },
+      { id: 13, category: "shoes", brand: "Daily Sneakers", name: "White Leather Sneakers", price: 3800, rating: 4.8, sold: 1720, tag: "Trending", image: "https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=900&q=85", desc: "รองเท้าหนังสีขาวทรงคลาสสิกที่แมตช์ง่ายกับยีนส์ กระโปรง และกางเกงผ้า", options: ["US 5", "US 6", "US 7", "US 8"], colors: ["#f8fafc", "#111827"] },
+      { id: 14, category: "fashion", brand: "Street Cap", name: "Baseball Cap", price: 1290, rating: 4.5, sold: 880, tag: "Street", image: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=900&q=85", desc: "หมวกแก๊ปทรงใส่ง่าย กันแดดและช่วยจบลุคในวันสบายๆ", options: ["One size"], colors: ["#111827", "#e5e7eb", "#1d4ed8"] },
+      { id: 15, category: "beauty", brand: "Makeup Studio", name: "Liquid Blush Makeup Set", price: 1050, rating: 4.9, sold: 2800, tag: "Viral", image: "https://images.unsplash.com/photo-1522338242992-e1a54906a8da?auto=format&fit=crop&w=900&q=85", desc: "เซ็ตเมคอัพโทนแก้มชมพู สีชัด ใช้ง่ายสำหรับ everyday look", options: ["Hope", "Joy", "Happy"], colors: ["#f4a3a8", "#f97316", "#ec4899"] },
+      { id: 16, category: "tech", brand: "Travel Gear", name: "Compact Power Bank 10000mAh", price: 890, rating: 4.7, sold: 1900, tag: "Travel", image: "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?auto=format&fit=crop&w=900&q=85", desc: "พาวเวอร์แบงก์พกง่าย สำหรับวันที่ต้องออกข้างนอกทั้งวัน", options: ["10000mAh", "20000mAh"], colors: ["#111827", "#f8fafc"] },
+      { id: 17, category: "bags", brand: "Nylon Daily", name: "Reusable Shoulder Bag", price: 1190, rating: 4.6, sold: 760, tag: "Lightweight", image: "https://images.unsplash.com/photo-1542295669297-4d352b042bca?auto=format&fit=crop&w=900&q=85", desc: "กระเป๋าสะพายผ้าน้ำหนักเบา จุของเยอะ พับเก็บง่าย", options: ["Standard", "Large"], colors: ["#111827", "#f9a8d4", "#86efac"] },
+      { id: 18, category: "food", brand: "Glico", name: "Pocky Chocolate Party Pack", price: 79, rating: 4.6, sold: 3600, tag: "Sweet", image: "https://images.unsplash.com/photo-1621939514649-280e2ee25f60?auto=format&fit=crop&w=900&q=85", desc: "ขนมแท่งเคลือบช็อกโกแลต กินง่าย แบ่งง่าย", options: ["Chocolate", "Strawberry", "Matcha"], colors: ["#6b341f", "#f9a8d4", "#84cc16"] },
+      { id: 19, category: "home", brand: "Relax Home", name: "Compact Aroma Diffuser", price: 1590, rating: 4.7, sold: 720, tag: "Relax", image: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=900&q=85", desc: "เครื่องพ่นอโรมาสำหรับห้องเล็ก ช่วยให้บรรยากาศนุ่มขึ้น", options: ["White", "Wood"], colors: ["#f8fafc", "#b08968"] },
+      { id: 20, category: "shoes", brand: "Converse", name: "Chuck Taylor All Star High", price: 2500, rating: 4.7, sold: 1980, tag: "Icon", image: "https://images.unsplash.com/photo-1494496195158-c3becb4f2475?auto=format&fit=crop&w=900&q=85", desc: "รองเท้าผ้าใบหุ้มข้อคลาสสิก ใส่ได้กับแทบทุกชุด", options: ["US 5", "US 6", "US 7", "US 8"], colors: ["#111827", "#f8fafc", "#dc2626"] },
+      { id: 21, category: "fashion", brand: "Mini Carry", name: "Round Mini Shoulder Bag", price: 590, rating: 4.8, sold: 2600, tag: "Daily", image: "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?auto=format&fit=crop&w=900&q=85", desc: "กระเป๋าสะพายใบเล็กแต่จุเก่ง เหมาะกับวันเดินเล่น", options: ["Mini", "Regular"], colors: ["#111827", "#f8fafc", "#a16207"] },
+      { id: 22, category: "tech", brand: "Sound Gear", name: "Portable Bluetooth Speaker", price: 3290, rating: 4.6, sold: 840, tag: "Sound", image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&w=900&q=85", desc: "ลำโพงบลูทูธพกพา เสียงแน่น สำหรับห้องหรือทริปสั้นๆ", options: ["Black", "Blue", "Red"], colors: ["#111827", "#2563eb", "#dc2626"] },
+      { id: 23, category: "beauty", brand: "Night Care", name: "Berry Lip Sleeping Mask", price: 790, rating: 4.8, sold: 2500, tag: "Night care", image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=900&q=85", desc: "มาสก์ริมฝีปากก่อนนอน ตื่นมาปากดูนุ่มชุ่มชื้น", options: ["Berry", "Gummy Bear"], colors: ["#f9a8d4", "#c084fc"] },
+      { id: 24, category: "home", brand: "Cafe Tools", name: "Reusable Coffee Cup", price: 690, rating: 4.5, sold: 950, tag: "Cafe", image: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?auto=format&fit=crop&w=900&q=85", desc: "แก้วกาแฟพกพา ใช้ซ้ำได้ เหมาะกับสายคาเฟ่", options: ["8 oz", "12 oz"], colors: ["#111827", "#f8fafc", "#f59e0b"] }
     ];
 
-    let cart = [];
-    let map, marker;
-    let currentCategory = 'all';
+    const categories = [
+      { id: "all", name: "ทั้งหมด" },
+      { id: "shoes", name: "รองเท้า" },
+      { id: "fashion", name: "แฟชั่น" },
+      { id: "bags", name: "กระเป๋า" },
+      { id: "beauty", name: "บิวตี้" },
+      { id: "tech", name: "แก็ดเจ็ต" },
+      { id: "food", name: "ของกิน" },
+      { id: "home", name: "ของใช้ในบ้าน" }
+    ];
 
-    // Initialize App
-    window.onload = () => {
-      renderProducts();
-      initMap();
+    const ranges = [
+      { id: "under500", label: "ต่ำกว่า ฿500", min: 0, max: 499 },
+      { id: "500to1500", label: "฿500 - ฿1,500", min: 500, max: 1500 },
+      { id: "1500to5000", label: "฿1,500 - ฿5,000", min: 1500, max: 5000 },
+      { id: "over5000", label: "มากกว่า ฿5,000", min: 5001, max: Infinity }
+    ];
+
+    const state = {
+      category: "all",
+      ranges: new Set(),
+      search: "",
+      min: "",
+      max: "",
+      sort: "popular",
+      cart: []
     };
 
-    function renderProducts(category = 'all') {
-      const list = document.getElementById('product-list');
-      const filtered = category === 'all' ? products : products.filter(p => p.category === category);
-      
-      list.innerHTML = filtered.map(p => `
-        <div class="bg-white rounded-2xl overflow-hidden border border-slate-100 hover:shadow-xl transition-all group">
-          <div class="h-48 overflow-hidden relative">
-            <img src="${p.img}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-            <div class="absolute top-3 left-3 bg-white/90 backdrop-blur px-2 py-1 rounded-lg text-xs font-bold shadow-sm">${p.emoji} ใหม่</div>
-          </div>
-          <div class="p-5">
-            <h3 class="font-semibold text-slate-800 mb-3 h-12 line-clamp-2">${p.name}</h3>
-            <div class="flex items-center justify-between">
-              <span class="text-xl font-bold text-slate-900">฿${p.price}</span>
-              <button onclick="addToCart(${p.id})" class="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center hover:bg-rose-500 transition-colors">＋</button>
+    const baht = value => "฿" + value.toLocaleString("th-TH");
+
+    function init() {
+      renderCategories();
+      renderRanges();
+      renderProducts();
+      renderCart();
+
+      document.getElementById("searchInput").addEventListener("input", event => {
+        state.search = event.target.value.trim().toLowerCase();
+        renderProducts();
+      });
+      document.getElementById("sortSelect").addEventListener("change", event => {
+        state.sort = event.target.value;
+        renderProducts();
+      });
+      document.getElementById("minPrice").addEventListener("input", event => {
+        state.min = event.target.value;
+        renderProducts();
+      });
+      document.getElementById("maxPrice").addEventListener("input", event => {
+        state.max = event.target.value;
+        renderProducts();
+      });
+    }
+
+    function renderCategories() {
+      document.getElementById("categoryList").innerHTML = categories.map(cat => {
+        const count = cat.id === "all" ? products.length : products.filter(item => item.category === cat.id).length;
+        return `<button class="cat-btn ${state.category === cat.id ? "active" : ""}" onclick="setCategory('${cat.id}')">
+          <span>${cat.name}</span><span>${count}</span>
+        </button>`;
+      }).join("");
+    }
+
+    function renderRanges() {
+      document.getElementById("priceRanges").innerHTML = ranges.map(range => `
+        <label class="price-option">
+          <input type="checkbox" onchange="toggleRange('${range.id}', this.checked)">
+          <span>${range.label}</span>
+        </label>
+      `).join("");
+    }
+
+    function setCategory(category) {
+      state.category = category;
+      renderCategories();
+      renderProducts();
+      closeFiltersOnMobile();
+      scrollToCatalog();
+    }
+
+    function toggleRange(id, checked) {
+      if (checked) state.ranges.add(id);
+      else state.ranges.delete(id);
+      renderProducts();
+    }
+
+    function resetFilters() {
+      state.category = "all";
+      state.ranges.clear();
+      state.search = "";
+      state.min = "";
+      state.max = "";
+      state.sort = "popular";
+      document.getElementById("searchInput").value = "";
+      document.getElementById("minPrice").value = "";
+      document.getElementById("maxPrice").value = "";
+      document.getElementById("sortSelect").value = "popular";
+      renderCategories();
+      renderRanges();
+      renderProducts();
+    }
+
+    function filteredProducts() {
+      const manualMin = state.min === "" ? 0 : Number(state.min);
+      const manualMax = state.max === "" ? Infinity : Number(state.max);
+
+      let items = products.filter(item => {
+        const matchCategory = state.category === "all" || item.category === state.category;
+        const text = `${item.brand} ${item.name} ${item.desc}`.toLowerCase();
+        const matchSearch = !state.search || text.includes(state.search);
+        const matchManualPrice = item.price >= manualMin && item.price <= manualMax;
+        const matchRange = state.ranges.size === 0 || ranges
+          .filter(range => state.ranges.has(range.id))
+          .some(range => item.price >= range.min && item.price <= range.max);
+        return matchCategory && matchSearch && matchManualPrice && matchRange;
+      });
+
+      if (state.sort === "price-low") items.sort((a, b) => a.price - b.price);
+      if (state.sort === "price-high") items.sort((a, b) => b.price - a.price);
+      if (state.sort === "rating") items.sort((a, b) => b.rating - a.rating);
+      if (state.sort === "popular") items.sort((a, b) => b.sold - a.sold);
+      return items;
+    }
+
+    function renderProducts() {
+      const items = filteredProducts();
+      const categoryName = categories.find(cat => cat.id === state.category)?.name || "สินค้า";
+      document.getElementById("catalogTitle").textContent = state.category === "all" ? "สินค้าทั้งหมด" : categoryName;
+      document.getElementById("catalogSubtitle").textContent = `พบ ${items.length} รายการ จากทั้งหมด ${products.length} รายการ`;
+
+      document.getElementById("productGrid").innerHTML = items.length ? items.map(item => `
+        <article class="product-card">
+          <button class="product-image" onclick="openProductDetail(${item.id})" aria-label="ดูรายละเอียด ${item.name}">
+            <img src="${item.image}" alt="${item.name}" loading="lazy">
+            <span class="label">${item.tag}</span>
+          </button>
+          <div class="product-body">
+            <div>
+              <div class="product-brand">${item.brand}</div>
+              <h3 class="product-title">${item.name}</h3>
             </div>
+            <div class="rating">★ ${item.rating} <span>ขายแล้ว ${item.sold.toLocaleString("th-TH")}</span></div>
+            <div class="price-line">
+              <span class="price">${baht(item.price)}</span>
+              <button class="detail-link" onclick="openProductDetail(${item.id})">ดูรายละเอียด</button>
+            </div>
+            <button class="add-btn" onclick="addToCart(${item.id})" aria-label="เพิ่ม ${item.name}">+</button>
+          </div>
+        </article>
+      `).join("") : `
+        <div class="empty">
+          <div>
+            <strong>ไม่พบสินค้าที่ตรงกับตัวกรอง</strong><br>
+            ลองล้างตัวกรองหรือค้นหาด้วยคำอื่น
           </div>
         </div>
-      `).join('');
+      `;
     }
 
-    function filterProducts(category) {
-      currentCategory = category;
-      renderProducts(category);
-      
-      // Update UI
-      document.querySelectorAll('.category-btn').forEach(btn => {
-        if (btn.dataset.category === category) {
-          btn.classList.add('bg-rose-50', 'text-rose-600', 'font-medium');
-          btn.classList.remove('text-slate-500', 'hover:bg-slate-50');
-        } else {
-          btn.classList.remove('bg-rose-50', 'text-rose-600', 'font-medium');
-          btn.classList.add('text-slate-500', 'hover:bg-slate-50');
-        }
-      });
-    }
-
-    // Map Functions
-    function initMap() {
-      const lat = 13.6892;
-      const lng = 100.6094;
-      
-      map = L.map('map').setView([lat, lng], 15);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-      marker = L.marker([lat, lng]).addTo(map);
-      document.getElementById('address-input').value = "เลอผาสุก คอนโดมิเนียม, ซอยปุณณวิถี 44, แขวงบางจาก, เขตพระโขนง, กรุงเทพมหานคร 10260";
-
-      map.on('click', function(e) {
-        const { lat, lng } = e.latlng;
-        if (marker) map.removeLayer(marker);
-        marker = L.marker([lat, lng]).addTo(map);
-        
-        const addresses = [
-          "เลอผาสุก คอนโดมิเนียม, ซอยปุณณวิถี 44",
-          "ซอยสุขุมวิท 101, แขวงบางจาก, เขตพระโขนง",
-          "68/120 ปุณณวิถี, กรุงเทพมหานคร 10260"
-        ];
-        const randomAddr = addresses[Math.floor(Math.random() * addresses.length)];
-        document.getElementById('address-input').value = `${randomAddr} (พิกัด: ${lat.toFixed(4)}, ${lng.toFixed(4)})`;
-      });
-    }
-
-    // Cart Functions
-    function addToCart(id) {
-      const product = products.find(p => p.id === id);
-      const existing = cart.find(item => item.id === id);
-      if (existing) {
-        existing.qty++;
-      } else {
-        cart.push({ ...product, qty: 1 });
-      }
-      updateCartUI();
-      if (cart.length === 1) toggleCart(true);
-    }
-
-    function updateCartUI() {
-      const list = document.getElementById('cart-items');
-      const totalEl = document.getElementById('cart-total');
-      const badge = document.getElementById('cart-badge');
-      const checkoutBtn = document.getElementById('checkout-btn');
-      
-      if (cart.length === 0) {
-        list.innerHTML = '<div class="text-center py-20 text-slate-400" id="empty-cart-msg">ตะกร้ายังว่างอยู่นะ... มาช็อปกันเถอะ!</div>';
-        checkoutBtn.disabled = true;
-      } else {
-        list.innerHTML = cart.map(item => `
-          <div class="flex items-center gap-4 bg-slate-50 p-3 rounded-2xl border border-slate-100">
-            <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-2xl shadow-sm">${item.emoji}</div>
-            <div class="flex-1">
-              <h4 class="text-sm font-semibold text-slate-800">${item.name}</h4>
-              <p class="text-xs text-slate-500">฿${item.price} × ${item.qty}</p>
-            </div>
-            <div class="font-bold text-slate-900">฿${item.price * item.qty}</div>
+    function openProductDetail(id) {
+      const item = products.find(product => product.id === id);
+      document.getElementById("productModal").innerHTML = `
+        <div class="modal-media">
+          <img src="${item.image}" alt="${item.name}">
+        </div>
+        <div class="modal-info">
+          <button class="modal-close" onclick="closeProductDetail()">×</button>
+          <div>
+            <div class="product-brand">${item.brand}</div>
+            <h2>${item.name}</h2>
           </div>
-        `).join('');
-        checkoutBtn.disabled = false;
-      }
-
-      const total = cart.reduce((acc, curr) => acc + (curr.price * curr.qty), 0);
-      totalEl.innerText = total.toLocaleString();
-      badge.innerText = cart.reduce((acc, curr) => acc + curr.qty, 0);
-      
-      document.getElementById('summary-subtotal').innerText = total.toLocaleString();
-      document.getElementById('summary-total').innerText = total.toLocaleString();
+          <div class="detail-meta">
+            <span>★ ${item.rating}</span>
+            <span>ขายแล้ว ${item.sold.toLocaleString("th-TH")}</span>
+            <span>${categories.find(cat => cat.id === item.category)?.name}</span>
+          </div>
+          <p style="margin:0; color:var(--muted); line-height:1.7;">${item.desc}</p>
+          <div>
+            <strong>ตัวเลือก</strong>
+            <div class="option-row" style="margin-top:10px;">
+              ${item.options.map(option => `<button class="chip">${option}</button>`).join("")}
+            </div>
+          </div>
+          <div>
+            <strong>สี</strong>
+            <div class="option-row" style="margin-top:10px;">
+              ${item.colors.map(color => `<span class="swatch" style="--color:${color}"></span>`).join("")}
+            </div>
+          </div>
+          <div class="price-line" style="margin-top:8px;">
+            <span class="price" style="font-size:32px;">${baht(item.price)}</span>
+            <button class="primary-btn" onclick="addToCart(${item.id}); closeProductDetail();">เพิ่มลงตะกร้า</button>
+          </div>
+        </div>
+      `;
+      document.getElementById("productModalBackdrop").classList.add("show");
     }
 
-    function toggleCart(forceOpen) {
-      const drawer = document.getElementById('cart-drawer');
-      if (forceOpen === true) {
-        drawer.classList.remove('translate-x-full');
-      } else {
-        drawer.classList.toggle('translate-x-full');
-      }
+    function closeProductDetail(event) {
+      if (event && event.target.id !== "productModalBackdrop") return;
+      document.getElementById("productModalBackdrop").classList.remove("show");
     }
 
-    function openCheckout() {
-      document.getElementById('checkout-modal').classList.remove('hidden');
+    function addToCart(id) {
+      const item = products.find(product => product.id === id);
+      const existing = state.cart.find(line => line.id === id);
+      if (existing) existing.qty += 1;
+      else state.cart.push({ ...item, qty: 1 });
+      renderCart();
+      toggleCart(true);
+    }
+
+    function updateQty(id, delta) {
+      const line = state.cart.find(item => item.id === id);
+      if (!line) return;
+      line.qty += delta;
+      if (line.qty <= 0) state.cart = state.cart.filter(item => item.id !== id);
+      renderCart();
+    }
+
+    function renderCart() {
+      const count = state.cart.reduce((sum, item) => sum + item.qty, 0);
+      const total = state.cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+      document.getElementById("cartBadge").textContent = count;
+      document.getElementById("cartTotal").textContent = baht(total);
+      document.getElementById("checkoutButton").disabled = count === 0;
+
+      document.getElementById("cartItems").innerHTML = state.cart.length ? state.cart.map(item => `
+        <div class="cart-item">
+          <img src="${item.image}" alt="${item.name}">
+          <div>
+            <h4>${item.name}</h4>
+            <p>${baht(item.price)} · ${item.brand}</p>
+            <div class="qty">
+              <button onclick="updateQty(${item.id}, -1)">−</button>
+              <strong>${item.qty}</strong>
+              <button onclick="updateQty(${item.id}, 1)">+</button>
+            </div>
+          </div>
+          <strong>${baht(item.price * item.qty)}</strong>
+        </div>
+      `).join("") : `
+        <div class="empty" style="min-height:220px;">
+          <div>
+            <strong>ตะกร้ายังว่าง</strong><br>
+            เลือกสินค้าก่อน แล้วค่อยช้อปทิพย์
+          </div>
+        </div>
+      `;
+    }
+
+    function toggleCart(force) {
+      const open = typeof force === "boolean" ? force : !document.getElementById("cartDrawer").classList.contains("show");
+      document.getElementById("cartDrawer").classList.toggle("show", open);
+      document.getElementById("drawerBackdrop").classList.toggle("show", open);
+    }
+
+    function checkout() {
+      if (!state.cart.length) return;
+      const count = state.cart.reduce((sum, item) => sum + item.qty, 0);
+      const total = state.cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+      document.getElementById("checkoutText").textContent = `ออเดอร์ ${count} ชิ้น มูลค่า ${baht(total)} ถูกส่งเข้าจินตนาการเรียบร้อย ไม่มีการหักเงินจริง`;
       toggleCart(false);
-      setTimeout(() => map.invalidateSize(), 100);
+      document.getElementById("checkoutModalBackdrop").classList.add("show");
     }
 
-    function closeCheckout() {
-      document.getElementById('checkout-modal').classList.add('hidden');
+    function closeCheckout(event) {
+      if (event && event.target.id !== "checkoutModalBackdrop") return;
+      document.getElementById("checkoutModalBackdrop").classList.remove("show");
     }
 
-    function startTracking() {
-      closeCheckout();
-      document.getElementById('tracking-layer').classList.remove('hidden');
-      
-      let timeLeft = 7.5;
-      const timerEl = document.getElementById('timer');
-      const rider = document.getElementById('rider');
-      const line = document.getElementById('tracking-line');
-      
-      const interval = setInterval(() => {
-        timeLeft -= 0.1;
-        if (timeLeft <= 0) {
-          clearInterval(interval);
-          finishOrder();
-        } else {
-          timerEl.innerText = timeLeft.toFixed(1) + " วิ";
-          const progress = ((7.5 - timeLeft) / 7.5) * 100;
-          line.style.width = progress + "%";
-          rider.style.left = (20 + (progress * 0.6)) + "%";
-        }
-      }, 100);
+    function resetCart() {
+      state.cart = [];
+      renderCart();
+      document.getElementById("checkoutModalBackdrop").classList.remove("show");
     }
 
-    function finishOrder() {
-      document.getElementById('success-modal').classList.remove('hidden');
-      // Reset gift box state
-      document.getElementById('gift-box').innerText = "🎁";
-      document.getElementById('gift-box').classList.remove('animate-pop');
-      document.getElementById('success-title').innerText = "ของมาถึงแล้วจ้า!";
-      document.getElementById('success-text').innerText = "แตะกล่องเพื่อรับโดปามีนทิพย์และความสุขแบบเต็มพิกัด";
-      document.getElementById('reset-btn').classList.add('hidden');
+    function toggleFilters() {
+      document.getElementById("filters").classList.toggle("show");
     }
 
-    function openGift() {
-      const box = document.getElementById('gift-box');
-      if (box.innerText === "🎉") return; // Already opened
-
-      box.classList.add('animate-shake');
-      
-      setTimeout(() => {
-        box.classList.remove('animate-shake');
-        box.innerText = "🎉";
-        box.classList.add('animate-pop');
-        document.getElementById('success-title').innerText = "ได้รับโดปามีนแล้ว! ✨";
-        document.getElementById('success-text').innerText = "ความสุขแบบทิพย์ถูกเติมเต็มในจิตใจของคุณเรียบร้อย";
-        document.getElementById('reset-btn').classList.remove('hidden');
-      }, 800);
+    function closeFiltersOnMobile() {
+      document.getElementById("filters").classList.remove("show");
     }
 
-    function resetApp() {
-      cart = [];
-      updateCartUI();
-      document.getElementById('tracking-layer').classList.add('hidden');
-      document.getElementById('success-modal').classList.add('hidden');
-      document.getElementById('address-input').value = "";
-      if (marker) {
-          const lat = 13.6892;
-          const lng = 100.6094;
-          marker.setLatLng([lat, lng]);
-          document.getElementById('address-input').value = "เลอผาสุก คอนโดมิเนียม, ซอยปุณณวิถี 44, แขวงบางจาก, เขตพระโขนง, กรุงเทพมหานคร 10260";
-      }
+    function scrollToCatalog() {
+      document.getElementById("catalog").scrollIntoView({ behavior: "smooth", block: "start" });
     }
+
+    init();
   </script>
 </body>
 </html>
