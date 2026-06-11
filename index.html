@@ -1,193 +1,377 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShopThip | ช็อปทิพย์ - สุขทิพย์ ส่งไวทิพย์</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <style>
-        body { font-family: 'Kanit', sans-serif; }
-        .product-card:hover { transform: translateY(-5px); transition: all 0.3s ease; }
-        #map { height: 300px; border-radius: 0.75rem; }
-        .dopamine-loop { animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
-    </style>
-</head>
-<body class="bg-gray-50 text-gray-900">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="max-container mx-auto px-4 h-16 flex items-center justify-between">
-            <h1 class="text-2xl font-bold text-pink-600">ShopThip <span class="text-gray-400 text-sm font-normal">ช็อปทิพย์</span></h1>
-            <div class="flex items-center space-x-4">
-                <div class="relative">
-                    <button id="cart-btn" class="p-2 hover:bg-gray-100 rounded-full">
-                        🛒 <span id="cart-count" class="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </nav>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopThip - ช็อปทิพย์ | Shopping with Dopamine</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Kanit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet.js -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <!-- Hero Section -->
-    <header class="bg-gradient-to-r from-pink-500 to-rose-400 text-white py-12">
-        <div class="max-container mx-auto px-4 text-center">
-            <h2 class="text-4xl font-bold mb-4">ช้อปปิ้งออนไลน์ที่ให้ความสุขทิพย์ 💖</h2>
-            <p class="text-lg opacity-90">สุขทิพย์ ส่งไวทิพย์ แพ็กด้วยใจใน 7.5 วินาที</p>
-        </div>
-    </header>
+  <style>
+    body { font-family: 'Kanit', sans-serif; }
+    .custom-shadow { box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1); }
+    .gradient-brand { background: linear-gradient(135deg, #ff4e50, #f9d423); }
+    #map { height: 300px; width: 100%; border-radius: 1rem; }
+    
+    /* Animations from original DopaShop */
+    @keyframes float {
+      0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+      50% { transform: translate(-50%, -50%) translateY(-10px); }
+    }
+    .animate-float { animation: float 1.4s ease-in-out infinite; }
+    
+    @keyframes boxOpen {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-box { animation: boxOpen 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+  </style>
+</head>
+<body class="bg-gray-50 text-slate-900 min-h-screen">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-10 h-10 gradient-brand rounded-xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">ท</div>
+        <h1 class="text-2xl font-bold tracking-tight text-slate-800">ShopThip <span class="text-rose-500">ช็อปทิพย์</span></h1>
+      </div>
+      
+      <div class="flex items-center gap-4">
+        <button onclick="toggleCart()" class="relative p-2 hover:bg-slate-100 rounded-full transition-colors">
+          <span class="text-2xl">🛒</span>
+          <span id="cart-badge" class="absolute top-0 right-0 w-5 h-5 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+    
+    <!-- Sidebar / Categories -->
+    <aside class="lg:col-span-3 space-y-6">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+        <h2 class="text-lg font-semibold mb-4">หมวดหมู่สินค้า</h2>
+        <nav class="space-y-2">
+          <button class="w-full text-left px-4 py-2 rounded-xl bg-rose-50 text-rose-600 font-medium">✨ ทั้งหมด</button>
+          <button class="w-full text-left px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors">💄 เครื่องสำอาง</button>
+          <button class="w-full text-left px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors">🍪 ขนมยอดฮิต</button>
+          <button class="w-full text-left px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors">📱 เทคโนโลยี</button>
+        </nav>
+      </div>
+      
+      <div class="bg-slate-900 p-6 rounded-2xl text-white shadow-xl">
+        <h3 class="font-bold text-lg mb-2">ShopThip Premium 💎</h3>
+        <p class="text-slate-400 text-sm leading-relaxed">ช็อปความสุขแบบพรีเมียม ส่งไวในจินตนาการ 7.5 วินาที พร้อมรับโดปามีนทันที!</p>
+      </div>
+    </aside>
 
     <!-- Product Grid -->
-    <main class="max-container mx-auto px-4 py-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="product-grid">
-            <!-- Product 1: Lip It -->
-            <div class="bg-white rounded-xl shadow-sm product-card overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1586775490184-b79f0621891e?auto=format&fit=crop&q=80&w=400" alt="Lip It" class="w-full h-48 object-cover">
-                <div class="p-4">
-                    <h3 class="font-semibold text-lg">Lip It Water Bomb Color Glow</h3>
-                    <p class="text-pink-600 font-bold text-xl mt-2">฿0</p>
-                    <button onclick="addToCart('Lip It Balm')" class="w-full mt-4 bg-gray-900 text-white py-2 rounded-lg hover:bg-black">หยิบใส่ตะกร้า</button>
-                </div>
-            </div>
-            <!-- Product 2: Thai Snack -->
-            <div class="bg-white rounded-xl shadow-sm product-card overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1621939514649-280e2ee25f60?auto=format&fit=crop&q=80&w=400" alt="Snack" class="w-full h-48 object-cover">
-                <div class="p-4">
-                    <h3 class="font-semibold text-lg">Premium Thai Snack Box</h3>
-                    <p class="text-pink-600 font-bold text-xl mt-2">฿0</p>
-                    <button onclick="addToCart('Thai Snack Box')" class="w-full mt-4 bg-gray-900 text-white py-2 rounded-lg hover:bg-black">หยิบใส่ตะกร้า</button>
-                </div>
-            </div>
-            <!-- Product 3: Accessory -->
-            <div class="bg-white rounded-xl shadow-sm product-card overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&q=80&w=400" alt="Scarf" class="w-full h-48 object-cover">
-                <div class="p-4">
-                    <h3 class="font-semibold text-lg">Handmade Silk Scarf</h3>
-                    <p class="text-pink-600 font-bold text-xl mt-2">฿0</p>
-                    <button onclick="addToCart('Silk Scarf')" class="w-full mt-4 bg-gray-900 text-white py-2 rounded-lg hover:bg-black">หยิบใส่ตะกร้า</button>
-                </div>
-            </div>
-            <!-- Product 4: Tech -->
-            <div class="bg-white rounded-xl shadow-sm product-card overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=400" alt="Headphones" class="w-full h-48 object-cover">
-                <div class="p-4">
-                    <h3 class="font-semibold text-lg">Wireless Comfort Pro</h3>
-                    <p class="text-pink-600 font-bold text-xl mt-2">฿0</p>
-                    <button onclick="addToCart('Headphones')" class="w-full mt-4 bg-gray-900 text-white py-2 rounded-lg hover:bg-black">หยิบใส่ตะกร้า</button>
-                </div>
-            </div>
-        </div>
-    </main>
+    <section class="lg:col-span-9">
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="product-list">
+        <!-- Products will be injected here -->
+      </div>
+    </section>
 
-    <!-- Checkout Modal -->
-    <div id="checkout-modal" class="fixed inset-0 bg-black bg-opacity-50 z-[100] hidden flex items-center justify-center">
-        <div class="bg-white w-full max-w-2xl mx-4 rounded-2xl p-6 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold">ยืนยันที่อยู่จัดส่งทิพย์</h2>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">✕</button>
-            </div>
-            
-            <div id="map" class="mb-4"></div>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">ชื่อผู้รับ</label>
-                    <input type="text" value="Peach" class="w-full mt-1 border rounded-lg p-2 bg-gray-50">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">ที่อยู่จัดส่ง (เลือกจากแมพด้านบน)</label>
-                    <textarea id="address" class="w-full mt-1 border rounded-lg p-2 min-h-[80px]">ปักหมุดในแมพเพื่อระบุที่อยู่</textarea>
-                </div>
-                <button onclick="processOrder()" class="w-full bg-pink-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-pink-700 shadow-lg shadow-pink-200">ชำระเงินทิพย์ ฿0</button>
-            </div>
-        </div>
+  </main>
+
+  <!-- Cart Sidebar Drawer -->
+  <div id="cart-drawer" class="fixed inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+    <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+      <h2 class="text-xl font-bold">ตะกร้าของคุณ</h2>
+      <button onclick="toggleCart()" class="text-2xl hover:rotate-90 transition-transform">✕</button>
     </div>
+    
+    <div id="cart-items" class="flex-1 overflow-y-auto p-6 space-y-4">
+      <!-- Cart items injected here -->
+      <div class="text-center py-20 text-slate-400" id="empty-cart-msg">ตะกร้ายังว่างอยู่นะ... มาช็อปกันเถอะ!</div>
+    </div>
+    
+    <div class="p-6 border-t border-slate-100 bg-slate-50">
+      <div class="flex justify-between items-center mb-6">
+        <span class="text-slate-500">ยอดรวมทั้งหมด</span>
+        <span class="text-2xl font-bold text-slate-900">฿<span id="cart-total">0</span></span>
+      </div>
+      <button onclick="openCheckout()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-lg hover:bg-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed" id="checkout-btn" disabled>
+        ดำเนินการชำระเงินทิพย์
+      </button>
+    </div>
+  </div>
 
-    <!-- Delivery Status Overlay -->
-    <div id="delivery-overlay" class="fixed inset-0 bg-white z-[200] hidden flex flex-col items-center justify-center text-center p-6">
-        <div class="text-8xl mb-6">🛵</div>
+  <!-- Checkout Modal -->
+  <div id="checkout-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
+      <!-- Left: Form & Map -->
+      <div class="flex-1 p-8 overflow-y-auto border-r border-slate-100">
+        <h2 class="text-2xl font-bold mb-6">ที่อยู่จัดส่ง</h2>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">ชื่อผู้รับ</label>
+            <input type="text" id="receiver-name" placeholder="ระบุชื่อของคุณ" class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-rose-500 outline-none">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">ที่อยู่จัดส่ง (จากแมพ)</label>
+            <textarea id="address-input" rows="2" placeholder="เลือกที่อยู่ในแผนที่..." class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-rose-500 outline-none" readonly></textarea>
+          </div>
+          
+          <div id="map" class="shadow-inner"></div>
+          <p class="text-[10px] text-slate-400 mt-1">* คลิกบนแผนที่เพื่อเลือกจุดส่งของ</p>
+        </div>
+      </div>
+      
+      <!-- Right: Summary & Action -->
+      <div class="w-full md:w-80 bg-slate-50 p-8 flex flex-col">
+        <h3 class="text-lg font-bold mb-4">สรุปคำสั่งซื้อ</h3>
+        <div class="flex-1 space-y-3 text-sm text-slate-600 mb-6">
+          <div class="flex justify-between"><span>รวมสินค้า</span><span class="font-semibold text-slate-900">฿<span id="summary-subtotal">0</span></span></div>
+          <div class="flex justify-between"><span>ค่าส่งทิพย์</span><span class="text-green-600 font-semibold">FREE</span></div>
+          <div class="border-t border-slate-200 pt-3 flex justify-between text-base">
+            <span class="font-bold text-slate-900">ยอดรวม</span>
+            <span class="font-bold text-rose-500">฿<span id="summary-total">0</span></span>
+          </div>
+        </div>
+        
+        <button onclick="startTracking()" class="w-full gradient-brand text-white py-4 rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all">
+          ชำระเงินและรับโดปามีน
+        </button>
+        <button onclick="closeCheckout()" class="mt-4 text-slate-400 text-sm hover:text-slate-600">ยกเลิก</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tracking Layer -->
+  <div id="tracking-layer" class="fixed inset-0 bg-white z-[70] hidden flex flex-col p-6 overflow-hidden">
+    <div class="max-w-4xl mx-auto w-full flex-1 flex flex-col">
+      <div class="text-center mb-10">
+        <div class="inline-block p-3 bg-rose-50 rounded-full text-rose-500 text-3xl mb-4 animate-bounce">🛵</div>
         <h2 class="text-3xl font-bold mb-2">ออเดอร์ทิพย์กำลังเดินทาง!</h2>
-        <p class="text-gray-500 mb-8">ความสุขกำลังถูกส่งด้วยความเร็วแสง...</p>
-        <div class="w-64 h-2 bg-gray-100 rounded-full overflow-hidden">
-            <div id="delivery-progress" class="h-full bg-pink-500 w-0 transition-all duration-[7500ms] ease-linear"></div>
+        <p class="text-slate-500">ความสุขพรีเมียมจะถึงมือคุณใน 7.5 วินาที</p>
+      </div>
+
+      <!-- Tracking Map Visualization -->
+      <div class="flex-1 relative bg-slate-100 rounded-[3rem] border-4 border-white shadow-2xl overflow-hidden mb-8">
+         <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(#000 1px, transparent 1px); background-size: 20px 20px;"></div>
+         
+         <div class="absolute left-10 top-1/2 -translate-y-1/2 bg-white p-4 rounded-2xl shadow-lg text-2xl">🏬</div>
+         <div class="absolute right-10 top-1/3 bg-white p-4 rounded-2xl shadow-lg text-2xl">🏢</div>
+         
+         <!-- Progress Line -->
+         <div class="absolute left-20 right-20 top-1/2 h-2 bg-white rounded-full">
+            <div id="tracking-line" class="h-full gradient-brand rounded-full transition-all duration-100 ease-linear" style="width: 0%"></div>
+         </div>
+
+         <!-- Rider -->
+         <div id="rider" class="absolute text-4xl animate-float transition-all duration-100 ease-linear" style="left: 20%; top: 50%; transform: translate(-50%, -50%)">🛵</div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-8">
+        <div class="bg-slate-50 p-6 rounded-3xl text-center">
+          <span class="text-slate-400 text-xs block mb-1">ระยะเวลารอทั้งหมด</span>
+          <strong class="text-2xl font-bold">7.5 วิ</strong>
         </div>
-        <p class="mt-4 font-mono text-xl" id="timer">7.5s</p>
+        <div class="bg-slate-50 p-6 rounded-3xl text-center">
+          <span class="text-slate-400 text-xs block mb-1">เวลาที่เหลือ</span>
+          <strong id="timer" class="text-2xl font-bold text-rose-500">7.5 วิ</strong>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <!-- Unboxing Modal -->
-    <div id="unboxing-modal" class="fixed inset-0 bg-black bg-opacity-90 z-[300] hidden flex flex-col items-center justify-center p-6">
-        <div id="box-icon" class="text-9xl cursor-pointer hover:scale-110 transition-transform dopamine-loop" onclick="unbox()">📦</div>
-        <p class="text-white text-xl mt-8 font-medium">แตะที่กล่องเพื่อรับโดปามีนทิพย์!</p>
+  <!-- Success Modal -->
+  <div id="success-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[80] hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-[3rem] p-12 text-center max-w-sm w-full shadow-2xl animate-box">
+      <div class="text-7xl mb-6">🎁</div>
+      <h2 class="text-3xl font-bold mb-4">ของมาถึงแล้วจ้า!</h2>
+      <p class="text-slate-500 mb-8 leading-relaxed">แตะกล่องเพื่อรับโดปามีนทิพย์และความสุขแบบเต็มพิกัด</p>
+      <button onclick="resetApp()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-lg">
+        ช็อปใหม่อีกรอบ ✨
+      </button>
     </div>
+  </div>
 
-    <script>
-        let cart = [];
-        let map, marker;
+  <script>
+    // Config & Data
+    const products = [
+      { id: 1, name: "Lip It Water Bomb Color Balm - Berry", price: 189, emoji: "💄", color: "#fdf2f8", img: "https://images.unsplash.com/photo-1586776977607-310e9c725c37?auto=format&fit=crop&w=400&q=80" },
+      { id: 2, name: "เลย์ รสพริกเผาปรุงรส (Lay's Thai)", price: 30, emoji: "🍪", color: "#fefce8", img: "https://images.unsplash.com/photo-1566478989037-eec170784d0b?auto=format&fit=crop&w=400&q=80" },
+      { id: 3, name: "กระเป๋าสานดีไซน์โมเดิร์น", price: 450, emoji: "👜", color: "#fafaf9", img: "https://images.unsplash.com/photo-1544816153-12ad5d7133a2?auto=format&fit=crop&w=400&q=80" },
+      { id: 4, name: "เทียนหอมอโรมา กลิ่นดอกโมก", price: 290, emoji: "🕯️", color: "#f0fdfa", img: "https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=400&q=80" },
+      { id: 5, name: "เคส iPhone ลายกราฟิกไทย", price: 350, emoji: "📱", color: "#eff6ff", img: "https://images.unsplash.com/photo-1601784551446-20c9e07cdbea?auto=format&fit=crop&w=400&q=80" },
+      { id: 6, name: "หมวกแก๊ป 'ช็อปทิพย์' Edition", price: 590, emoji: "🧢", color: "#f5f3ff", img: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=400&q=80" }
+    ];
 
-        // Initialize Map
-        function initMap() {
-            const punnawithi = [13.6892, 100.6094];
-            map = L.map('map').setView(punnawithi, 16);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-            
-            marker = L.marker(punnawithi).addTo(map);
-            document.getElementById('address').value = 'เลอผาสุก คอนโดมิเนียม, ซอยปุณณวิถี 44, แขวงบางจาก, เขตพระโขนง, กรุงเทพมหานคร 10260';
+    let cart = [];
+    let map, marker;
 
-            map.on('click', function(e) {
-                const { lat, lng } = e.latlng;
-                marker.setLatLng([lat, lng]);
-                document.getElementById('address').value = `พิกัด: ${lat.toFixed(4)}, ${lng.toFixed(4)} (เลอผาสุก คอนโดมิเนียม, ซอยปุณณวิถี 44...)`;
-            });
+    // Initialize App
+    window.onload = () => {
+      renderProducts();
+      initMap();
+    };
+
+    function renderProducts() {
+      const list = document.getElementById('product-list');
+      list.innerHTML = products.map(p => `
+        <div class="bg-white rounded-2xl overflow-hidden border border-slate-100 hover:shadow-xl transition-all group">
+          <div class="h-48 overflow-hidden relative">
+            <img src="${p.img}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+            <div class="absolute top-3 left-3 bg-white/90 backdrop-blur px-2 py-1 rounded-lg text-xs font-bold shadow-sm">${p.emoji} ใหม่</div>
+          </div>
+          <div class="p-5">
+            <h3 class="font-semibold text-slate-800 mb-3 h-12 line-clamp-2">${p.name}</h3>
+            <div class="flex items-center justify-between">
+              <span class="text-xl font-bold text-slate-900">฿${p.price}</span>
+              <button onclick="addToCart(${p.id})" class="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center hover:bg-rose-500 transition-colors">＋</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Map Functions
+    function initMap() {
+      // Default: Punnawithi (Peach's Home area)
+      const lat = 13.6892;
+      const lng = 100.6094;
+      
+      map = L.map('map').setView([lat, lng], 15);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+      marker = L.marker([lat, lng]).addTo(map);
+      document.getElementById('address-input').value = "เลอผาสุก คอนโดมิเนียม, ซอยปุณณวิถี 44, แขวงบางจาก, เขตพระโขนง, กรุงเทพมหานคร 10260";
+
+      map.on('click', function(e) {
+        const { lat, lng } = e.latlng;
+        if (marker) map.removeLayer(marker);
+        marker = L.marker([lat, lng]).addTo(map);
+        
+        // Simulating address lookup
+        const addresses = [
+          "เลอผาสุก คอนโดมิเนียม, ซอยปุณณวิถี 44",
+          "ซอยสุขุมวิท 101, แขวงบางจาก, เขตพระโขนง",
+          "68/120 ปุณณวิถี, กรุงเทพมหานคร 10260"
+        ];
+        const randomAddr = addresses[Math.floor(Math.random() * addresses.length)];
+        document.getElementById('address-input').value = `${randomAddr} (พิกัด: ${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+      });
+    }
+
+    // Cart Functions
+    function addToCart(id) {
+      const product = products.find(p => p.id === id);
+      const existing = cart.find(item => item.id === id);
+      if (existing) {
+        existing.qty++;
+      } else {
+        cart.push({ ...product, qty: 1 });
+      }
+      updateCartUI();
+      if (cart.length === 1) toggleCart(true);
+    }
+
+    function updateCartUI() {
+      const list = document.getElementById('cart-items');
+      const totalEl = document.getElementById('cart-total');
+      const badge = document.getElementById('cart-badge');
+      const checkoutBtn = document.getElementById('checkout-btn');
+      
+      if (cart.length === 0) {
+        list.innerHTML = '<div class="text-center py-20 text-slate-400" id="empty-cart-msg">ตะกร้ายังว่างอยู่นะ... มาช็อปกันเถอะ!</div>';
+        checkoutBtn.disabled = true;
+      } else {
+        list.innerHTML = cart.map(item => `
+          <div class="flex items-center gap-4 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+            <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-2xl shadow-sm">${item.emoji}</div>
+            <div class="flex-1">
+              <h4 class="text-sm font-semibold text-slate-800">${item.name}</h4>
+              <p class="text-xs text-slate-500">฿${item.price} × ${item.qty}</p>
+            </div>
+            <div class="font-bold text-slate-900">฿${item.price * item.qty}</div>
+          </div>
+        `).join('');
+        checkoutBtn.disabled = false;
+      }
+
+      const total = cart.reduce((acc, curr) => acc + (curr.price * curr.qty), 0);
+      totalEl.innerText = total.toLocaleString();
+      badge.innerText = cart.reduce((acc, curr) => acc + curr.qty, 0);
+      
+      document.getElementById('summary-subtotal').innerText = total.toLocaleString();
+      document.getElementById('summary-total').innerText = total.toLocaleString();
+    }
+
+    function toggleCart(forceOpen) {
+      const drawer = document.getElementById('cart-drawer');
+      if (forceOpen === true) {
+        drawer.classList.remove('translate-x-full');
+      } else {
+        drawer.classList.toggle('translate-x-full');
+      }
+    }
+
+    function openCheckout() {
+      document.getElementById('checkout-modal').classList.remove('hidden');
+      toggleCart(false);
+      setTimeout(() => map.invalidateSize(), 100);
+    }
+
+    function closeCheckout() {
+      document.getElementById('checkout-modal').classList.add('hidden');
+    }
+
+    // Tracking Logic (The Dopamine Loop)
+    function startTracking() {
+      closeCheckout();
+      document.getElementById('tracking-layer').classList.remove('hidden');
+      
+      let timeLeft = 7.5;
+      const timerEl = document.getElementById('timer');
+      const rider = document.getElementById('rider');
+      const line = document.getElementById('tracking-line');
+      
+      const interval = setInterval(() => {
+        timeLeft -= 0.1;
+        if (timeLeft <= 0) {
+          clearInterval(interval);
+          finishOrder();
+        } else {
+          timerEl.innerText = timeLeft.toFixed(1) + " วิ";
+          const progress = ((7.5 - timeLeft) / 7.5) * 100;
+          line.style.width = progress + "%";
+          rider.style.left = (20 + (progress * 0.6)) + "%";
         }
+      }, 100);
+    }
 
-        function addToCart(item) {
-            cart.push(item);
-            document.getElementById('cart-count').innerText = cart.length;
-            showCheckout();
-        }
+    function finishOrder() {
+      document.getElementById('success-modal').classList.remove('hidden');
+    }
 
-        function showCheckout() {
-            document.getElementById('checkout-modal').classList.remove('hidden');
-            setTimeout(() => {
-                if(!map) initMap();
-                map.invalidateSize();
-            }, 100);
-        }
-
-        function closeModal() {
-            document.getElementById('checkout-modal').classList.add('hidden');
-        }
-
-        function processOrder() {
-            document.getElementById('checkout-modal').classList.add('hidden');
-            document.getElementById('delivery-overlay').classList.remove('hidden');
-            
-            setTimeout(() => {
-                document.getElementById('delivery-progress').style.width = '100%';
-            }, 100);
-
-            let time = 7.5;
-            const interval = setInterval(() => {
-                time -= 0.1;
-                document.getElementById('timer').innerText = time.toFixed(1) + 's';
-                if (time <= 0) {
-                    clearInterval(interval);
-                    showUnboxing();
-                }
-            }, 100);
-        }
-
-        function showUnboxing() {
-            document.getElementById('delivery-overlay').classList.add('hidden');
-            document.getElementById('unboxing-modal').classList.remove('hidden');
-        }
-
-        function unbox() {
-            alert('🎉 ได้รับความสุขทิพย์แล้ว! ขอบคุณที่ช้อปกับ ShopThip');
-            location.reload();
-        }
-    </script>
+    function resetApp() {
+      cart = [];
+      updateCartUI();
+      document.getElementById('tracking-layer').classList.add('hidden');
+      document.getElementById('success-modal').classList.add('hidden');
+      document.getElementById('address-input').value = "";
+      if (marker) {
+          const lat = 13.6892;
+          const lng = 100.6094;
+          marker.setLatLng([lat, lng]);
+          document.getElementById('address-input').value = "เลอผาสุก คอนโดมิเนียม, ซอยปุณณวิถี 44, แขวงบางจาก, เขตพระโขนง, กรุงเทพมหานคร 10260";
+      }
+    }
+  </script>
 </body>
 </html>
